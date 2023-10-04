@@ -1,0 +1,25 @@
+GET http://localhost:3000/recipes?page=1
+
+###
+
+POST http://localhost:3000/recipes
+Content-Type: application/json
+
+{
+  "name": "kofta",
+  "description": "so good fr",
+  "ingredients": ["meat", "pepper", "etc"]
+}
+
+###
+PUT http://localhost:3000/recipes/651c89bab6102dcb43050ecc
+Content-Type: application/json
+
+{
+  "name": "kofta2",
+  "description": "so good fr",
+  "ingredients": ["meat", "pepper", "etc"]
+}
+
+###
+DELETE http://localhost:3000/recipes/651c89bab6102dcb43050ecc
