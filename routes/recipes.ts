@@ -1,11 +1,12 @@
 import { Router } from "express";
 import * as recipesController from "../controllers/recipes";
+import { isAuth } from "../middlewares/isAuth";
 
 const router = Router();
 
-router.get("/", recipesController.getRecipes);
-router.post("/", recipesController.postRecipe);
-router.put("/:recipeId", recipesController.putRecipe);
-router.delete("/:recipeId", recipesController.deleteRecipe);
+router.get("/", isAuth, recipesController.getRecipes);
+router.post("/", isAuth, recipesController.postRecipe);
+router.put("/:recipeId", isAuth, recipesController.putRecipe);
+router.delete("/:recipeId", isAuth, recipesController.deleteRecipe);
 
 export default router;

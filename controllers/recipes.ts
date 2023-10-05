@@ -1,19 +1,30 @@
 import { RequestHandler } from "express";
 import { Recipe } from "../models/recipe";
+import { User } from "../models/user";
 
 const RECIPES_PER_PAGE = 3;
 
 export const getRecipes: RequestHandler = async (req, res, next) => {
   try {
+    const { userId } = req;
     const page = parseInt(req.query.page as string) || 1;
-    const totalRecipes = await Recipe.find().countDocuments();
-    const recipes = await Recipe.find()
-      .skip((page - 1) * RECIPES_PER_PAGE)
-      .limit(RECIPES_PER_PAGE);
-
+    const user = await User.findById(userId).populate({
+      path: "recipes",
+      options: {
+        skip: (page - 1) * RECIPES_PER_PAGE,
+        limit: RECIPES_PER_PAGE,
+      },
+    });
+    if (!user) {
+      const error = new Error("User not found") as CustomError;
+      error.statusCode = 404;
+      throw error;
+    }
+    const recipes = user.recipes;
+    const totalRecipes = (await User.findById(userId))?.recipes.length;
     const response: CustomResponse = {
       success: true,
-      status_message: "Fetched recipes",
+      status_message: "Fetched recipes of user",
       data: {
         totalRecipes,
         recipes,
@@ -30,12 +41,21 @@ export const postRecipe: RequestHandler = async (req, res, next) => {
   try {
     // validation
     const { name, description, ingredients } = req.body;
+    const { userId } = req;
     const recipe = new Recipe({ name, description, ingredients });
     await recipe.save();
+    const user = await User.findById(userId);
+    if (!user) {
+      const error = new Error("User not found") as CustomError;
+      error.statusCode = 404;
+      throw error;
+    }
+    user.recipes.push(recipe._id);
+    await user.save();
     const response: CustomResponse = {
       success: true,
       status_message: "created recipe successfully",
-      data: { recipe },
+      data: { recipe, userId },
     };
     res.status(201).json(response);
   } catch (err: any) {
