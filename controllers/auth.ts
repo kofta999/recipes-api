@@ -53,7 +53,6 @@ export const login: RequestHandler = async (req, res, next) => {
       .setExpirationTime("2h")
       .setProtectedHeader({ alg: "HS256" })
       .sign(secretKey);
-      console.log(secretKey);
 
     const response: CustomResponse = {
       success: true,

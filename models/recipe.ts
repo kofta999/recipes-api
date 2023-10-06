@@ -1,6 +1,13 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 
-const recipeSchema = new Schema(
+interface IRecipe {
+  name: string;
+  description: string;
+  ingredients: string[]
+  creator: Types.ObjectId
+}
+
+const recipeSchema = new Schema<IRecipe>(
   {
     name: {
       type: String,
@@ -14,8 +21,13 @@ const recipeSchema = new Schema(
       type: [String],
       required: true,
     },
+    creator: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-export const Recipe = model("Recipe", recipeSchema);
+export const Recipe = model<IRecipe>("Recipe", recipeSchema);

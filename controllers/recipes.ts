@@ -42,7 +42,12 @@ export const postRecipe: RequestHandler = async (req, res, next) => {
     // validation
     const { name, description, ingredients } = req.body;
     const { userId } = req;
-    const recipe = new Recipe({ name, description, ingredients });
+    const recipe = new Recipe({
+      name,
+      description,
+      ingredients,
+      creator: userId,
+    });
     await recipe.save();
     const user = await User.findById(userId);
     if (!user) {
@@ -66,9 +71,10 @@ export const postRecipe: RequestHandler = async (req, res, next) => {
 
 export const putRecipe: RequestHandler = async (req, res, next) => {
   const { recipeId } = req.params;
+  const { userId } = req;
   const { name, description, ingredients } = req.body;
   try {
-    const recipe = await Recipe.findById(recipeId);
+    const recipe = await Recipe.findOne({ _id: recipeId, creator: userId });
     if (!recipe) {
       const error = new Error("Recipe not found") as CustomError;
       error.statusCode = 404;
@@ -95,14 +101,26 @@ export const putRecipe: RequestHandler = async (req, res, next) => {
 
 export const deleteRecipe: RequestHandler = async (req, res, next) => {
   const { recipeId } = req.params;
+  const { userId } = req;
   try {
-    const deletedRecipe = await Recipe.findOneAndDelete({ _id: recipeId });
+    const deletedRecipe = await Recipe.findOneAndDelete({
+      _id: recipeId,
+      creator: userId,
+    });
     if (!deletedRecipe) {
       const error = new Error("Recipe not found") as CustomError;
       error.statusCode = 404;
       throw error;
     }
-    res.status(204);
+    const user = await User.findById(userId);
+    if (!user) {
+      const error = new Error("User not found") as CustomError;
+      error.statusCode = 404;
+      throw error;
+    }
+    user.recipes.pull(recipeId);
+    await user.save();
+    res.status(204).json({});
   } catch (err: any) {
     if (!err.statusCode) {
       err.statusCode = 500;
