@@ -138,7 +138,10 @@ export const searchRecipes: RequestHandler = async (req, res, next) => {
     throw error;
   }
   const searchResults = await Recipe.find({
-    name: { $regex: new RegExp(query, "i") },
+    $or: [
+      { name: { $regex: new RegExp(query, "i") } },
+      { ingredients: { $in: [new RegExp(query, "i")] } },
+    ],
   })
     .skip((page - 1) * RECIPES_PER_PAGE)
     .limit(RECIPES_PER_PAGE);
