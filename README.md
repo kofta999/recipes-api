@@ -1,4 +1,12 @@
-# adonis-recipes
+# Recipes API
+
+A CRUD API with authentication for managing recipes with the ability to search them by name or ingredients.
+
+## Technologies used:
+* Bun
+* Express
+* MongoDB / Mongoose
+* Jose
 
 To install dependencies:
 
