@@ -128,3 +128,24 @@ export const deleteRecipe: RequestHandler = async (req, res, next) => {
     next(err);
   }
 };
+
+export const searchRecipes: RequestHandler = async (req, res, next) => {
+  const query = req.query.query as string;
+  const page = parseInt(req.query.page as string) || 1;
+  if (!query) {
+    const error = new Error("Search query not provieded") as CustomError;
+    error.statusCode = 400;
+    throw error;
+  }
+  const searchResults = await Recipe.find({
+    name: { $regex: new RegExp(query, "i") },
+  })
+    .skip((page - 1) * RECIPES_PER_PAGE)
+    .limit(RECIPES_PER_PAGE);
+  const response: CustomResponse = {
+    success: true,
+    status_message: "Fetched search results",
+    data: searchResults,
+  };
+  res.status(200).json(response);
+};
